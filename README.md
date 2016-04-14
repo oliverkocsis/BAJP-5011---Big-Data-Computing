@@ -1,14 +1,19 @@
 # BAJP-5011---Big-Data-Computing
 ## AWS/S3/Unix
-1. Bucket: ceu2016kocsiso
-2. EMR cluster: ceu2016kocsiso
-   1. Private-Public key pair is created:  ceu2016kocsiso
-   2. Inbound SSH rule is added to ElasticMapReduce-master security group
-3. s3cmd
-  1. `chmod 600 ceu2016kocsiso.pem`
-  2. `ssh -i ~/ceu2016kocsiso.pem hadoop@ec2-52-29-64-59.eu-central-1.compute.amazonaws.com`
-  3. `sudo pip install s3cmd`
-4. Download
+### Bucket: ceu2016kocsiso
+
+### EMR cluster: ceu2016kocsiso
+1. Private-Public key pair is created:  ceu2016kocsiso
+2. Inbound SSH rule is added to ElasticMapReduce-master security group
+
+### s3cmd
+```
+chmod 600 ceu2016kocsiso.pem
+ssh -i ~/ceu2016kocsiso.pem hadoop@ec2-52-29-64-59.eu-central-1.compute.amazonaws.com
+sudo pip install s3cmd
+```
+
+### Download
 ```
 [hadoop@ip-172-31-5-23 ~]$ s3cmd ls
 2016-04-14 19:15  s3://ceu2016kocsiso
@@ -22,11 +27,59 @@ download: 's3://zoltanctoth/ceu/signup.log' -> 'signup.log'  [1 of 1]
 download: 's3://zoltanctoth/ceu/signup.log' -> 'signup.log'  [1 of 1]
  46241691 of 46241691   100% in    7s     6.29 MB/s  done
 ```
-5. Registration sources
+### Registration sources
+Using the `head` function the file can be reviewed: 
 ```
+[hadoop@ip-172-31-5-23 ~]$ head signup.log 
+2000-01-08 00:00:01 registration 124 organic
+2000-01-08 00:00:02 registration 125 organic
+2000-01-08 00:00:03 registration 126 organic
+2000-01-08 00:00:04 registration 127 organic
+2000-01-08 00:00:05 registration 128 display
+2000-01-08 00:00:06 registration 129 organic
+2000-01-08 00:00:07 registration 130 organic
+2000-01-08 00:00:08 registration 131 organic
+2000-01-08 00:00:09 registration 132 sem
+2000-01-08 00:00:09 payment 132 DE 59
 ```
-6. When the local file was created, upload it into your bucket using the same name: `sources.txt`.
-7. Put the commands you used in (5, 6, 7) in a text editor (on your personal computer), save it using the name `unixsolution.txt`. Go to the S3 menu of the AWS Management Console in your browser and upload this file into your bucket.
+The uniq sources can be retreived via
+1. reading the file by `cat signup.log`
+2. then filetring for registration raws by `grep registration`
+3. selecting only the 5 column separated by spaces by `cut -d" " -f5`
+4. sorting the result `sort`
+5. keeping only the uniq values by `uniq`
+6. finally writing the result into a file by `>`
+
+```
+[hadoop@ip-172-31-5-23 ~]$ cat signup.log | grep registration | cut -d" " -f5 | sort | uniq > sources.txt
+[hadoop@ip-172-31-5-23 ~]$ cat sources.txt 
+blog
+display
+organic
+sem
+```
+
+### Upload
+```
+[hadoop@ip-172-31-5-23 ~]$ s3cmd put sources.txt s3://ceu2016kocsiso/sources.txt
+upload: 'sources.txt' -> 's3://ceu2016kocsiso/sources.txt'  [1 of 1]
+ 25 of 25   100% in    0s    51.86 B/s  done
+upload: 'sources.txt' -> 's3://ceu2016kocsiso/sources.txt'  [1 of 1]
+ 25 of 25   100% in    0s   498.48 B/s  done
+upload: 'sources.txt' -> 's3://ceu2016kocsiso/sources.txt'  [1 of 1]
+ 25 of 25   100% in    0s   338.19 B/s  done
+```
+### Commands
+```
+[hadoop@ip-172-31-5-23 ~]$ nano unixsolution.txt
+[hadoop@ip-172-31-5-23 ~]$ s3cmd put unixsolution.txt s3://ceu2016kocsiso/unixsolution.txt
+upload: 'unixsolution.txt' -> 's3://ceu2016kocsiso/unixsolution.txt'  [1 of 1]
+ 80 of 80   100% in    0s   170.85 B/s  done
+upload: 'unixsolution.txt' -> 's3://ceu2016kocsiso/unixsolution.txt'  [1 of 1]
+ 80 of 80   100% in    0s     4.30 kB/s  done
+upload: 'unixsolution.txt' -> 's3://ceu2016kocsiso/unixsolution.txt'  [1 of 1]
+ 80 of 80   100% in    0s  1302.13 B/s  done
+```
 
 Pig
 ---
