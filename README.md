@@ -3,6 +3,7 @@
 ### Bucket: ceu2016kocsiso
 
 ### EMR cluster: ceu2016kocsiso
+
 1. Private-Public key pair is created:  ceu2016kocsiso
 2. Inbound SSH rule is added to ElasticMapReduce-master security group
 
@@ -43,6 +44,7 @@ Using the `head` function the file can be reviewed:
 2000-01-08 00:00:09 payment 132 DE 59
 ```
 The uniq sources can be retreived via
+
 1. reading the file by `cat signup.log`
 2. then filetring for registration raws by `grep registration`
 3. selecting only the 5 column separated by spaces by `cut -d" " -f5`
