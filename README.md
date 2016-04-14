@@ -83,21 +83,50 @@ upload: 'unixsolution.txt' -> 's3://ceu2016kocsiso/unixsolution.txt'  [1 of 1]
  80 of 80   100% in    0s  1302.13 B/s  done
 ```
 
-Pig
----
-1. Create an EMR cluster and start pig.
-2. Copy s3://zoltanctoth/ceu/signup.log into your own bucket using `s3cmd`.
-
-**If you consider yourself as a non-technical person:**
-
-1. Answer this question using pig:
-
- What are the different amounts that were payed by users from the Netherlands (country code NL)? DUMP the file on the screen. STORE these amounts in a file called `amounts.txt` in your bucket (you will need to use the STORE command with the path `s3://<yourbucketname>/amounts.txt`). (If you do it correctly, the file will contain two lines:
+## Pig
+### Amounts
+#### Script
 ```
-59
-99
+[hadoop@ip-172-31-5-23 ~]$ pig
+grunt> log = LOAD 's3://ceu2016kocsiso/signup.log' USING PigStorage(' ') AS (date:chararray, 
+grunt> payments = FILTER log BY action == 'payment';
+grunt> neatherland= FILTER payments BY country == 'NL';
+grunt> amounts= FOREACH neatherland GENERATE amount;
+grunt> amount      = DISTINCT amounts;
+grunt> DUMP amount;
+(59)
+(99)
+grunt> STORE amount INTO 'amounts.txt' USING PigStorage(',');
+grunt> quit
 ```
-2. Put your final set of commands you executed in pig in a text editor on your personal computer, and use the AWS Management Console to upload this file into your bucket, using the name `amounts.pig`.
+#### Upload result
+```
+[hadoop@ip-172-31-5-23 ~]$ hadoop fs -ls
+Found 1 items
+drwxr-xr-x   - hadoop hadoop          0 2016-04-14 20:35 amounts.txt
+[hadoop@ip-172-31-5-23 ~]$ hadoop fs -get amounts.txt amounts.txt
+[hadoop@ip-172-31-5-23 ~]$ s3cmd put amounts.txt/ s3://ceu2016kocsiso/amounts.txt
+amounts.txt/  part-r-00000  _SUCCESS      
+[hadoop@ip-172-31-5-23 ~]$ s3cmd put amounts.txt/part-r-00000 s3://ceu2016kocsiso/amounts.txt
+upload: 'amounts.txt/part-r-00000' -> 's3://ceu2016kocsiso/amounts.txt'  [1 of 1]
+ 6 of 6   100% in    0s    12.86 B/s  done
+upload: 'amounts.txt/part-r-00000' -> 's3://ceu2016kocsiso/amounts.txt'  [1 of 1]
+ 6 of 6   100% in    0s   296.31 B/s  done
+upload: 'amounts.txt/part-r-00000' -> 's3://ceu2016kocsiso/amounts.txt'  [1 of 1]
+ 6 of 6   100% in    0s    77.59 B/s  done
+```
+#### Commands
+```
+[hadoop@ip-172-31-5-23 ~]$ nano amounts.pig
+[hadoop@ip-172-31-5-23 ~]$ s3cmd put amounts.pig s3://ceu2016kocsiso/amounts.pig
+upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
+ 409 of 409   100% in    0s   837.04 B/s  done
+upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
+ 409 of 409   100% in    0s    20.75 kB/s  done
+upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
+ 409 of 409   100% in    0s     4.58 kB/s  done
+```
+
 
 **If you consider yourself as a technical person:**
 
