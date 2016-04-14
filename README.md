@@ -1,9 +1,12 @@
 # BAJP-5011---Big-Data-Computing
-AWS/S3/Unix
------------
+## AWS/S3/Unix
 1. Bucket: ceu2016kocsiso
 2. EMR cluster: ceu2016kocsiso
-3. Install s3cmd: `pip install s3cmd`. *Note: You don't need to configure s3cmd with the AWS access and secret keys. This is automatically handled by the EMR cluster. `s3cmd` should work out of the box. [Here is a quick intro to s3cmd.](http://s3tools.org/s3cmd-howto)*
+   1. Private-Public key pair is created:  ceu2016kocsiso
+   2. Inbound SSH rule is added to ElasticMapReduce-master security group
+3. s3cmd
+  1. `ssh -i ~/ceu2016kocsiso.pem hadoop@ec2-52-29-64-59.eu-central-1.compute.amazonaws.com`
+  2. `pip install s3cmd`
 4. Download the sample to the local filesystem of the cluster using `s3cmd` and take a look at it.
 5. Answer the following question with the help of the [unix command line tools](https://github.com/zoltanctoth/bigdata-training/blob/master/commandline.md),
    using the local file that was created in step (4):
