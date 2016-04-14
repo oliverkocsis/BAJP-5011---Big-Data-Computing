@@ -5,15 +5,26 @@
    1. Private-Public key pair is created:  ceu2016kocsiso
    2. Inbound SSH rule is added to ElasticMapReduce-master security group
 3. s3cmd
-  1. `ssh -i ~/ceu2016kocsiso.pem hadoop@ec2-52-29-64-59.eu-central-1.compute.amazonaws.com`
-  2. `pip install s3cmd`
-4. Download the sample to the local filesystem of the cluster using `s3cmd` and take a look at it.
-5. Answer the following question with the help of the [unix command line tools](https://github.com/zoltanctoth/bigdata-training/blob/master/commandline.md),
-   using the local file that was created in step (4):
-   Which registration sources are there in the file? Only list every source one
-   time (get rid of the duplicates). For example, `organic` and `display` are
-   registration sources. Your task is to create a unix "pipeline" that displays
-   the different registration sources and stores it in a local file called `sources.txt`.
+  1. `chmod 600 ceu2016kocsiso.pem`
+  2. `ssh -i ~/ceu2016kocsiso.pem hadoop@ec2-52-29-64-59.eu-central-1.compute.amazonaws.com`
+  3. `sudo pip install s3cmd`
+4. Download
+```
+[hadoop@ip-172-31-5-23 ~]$ s3cmd ls
+2016-04-14 19:15  s3://ceu2016kocsiso
+[hadoop@ip-172-31-5-23 ~]$ s3cmd ls s3://zoltanctoth/ceu/
+2016-03-28 19:23      1115   s3://zoltanctoth/ceu/satisfaction.txt
+2016-03-28 19:21     43479   s3://zoltanctoth/ceu/signup-sample.log
+2016-03-28 19:20  46241691   s3://zoltanctoth/ceu/signup.log
+2016-03-28 19:23     54368   s3://zoltanctoth/ceu/web.log
+[hadoop@ip-172-31-5-23 ~]$ s3cmd get s3://zoltanctoth/ceu/signup.log signup.log
+download: 's3://zoltanctoth/ceu/signup.log' -> 'signup.log'  [1 of 1]
+download: 's3://zoltanctoth/ceu/signup.log' -> 'signup.log'  [1 of 1]
+ 46241691 of 46241691   100% in    7s     6.29 MB/s  done
+```
+5. Registration sources
+```
+```
 6. When the local file was created, upload it into your bucket using the same name: `sources.txt`.
 7. Put the commands you used in (5, 6, 7) in a text editor (on your personal computer), save it using the name `unixsolution.txt`. Go to the S3 menu of the AWS Management Console in your browser and upload this file into your bucket.
 
