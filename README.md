@@ -176,29 +176,42 @@ grunt> STORE mean INTO 'happier.txt' USING PigStorage(',');
 Based on the result the mean satisfaction of Gmail users over 81% but it is below 74% for Outlook users. It could be for several reasons, i.e. the Gmail users are used to flat user interfaces, they could be also more tech friendly. The real reason might be revelaed via A/B testing. 
 
 ## Spark
----
-**If you consider yourself as a non-technical person:**
+### IPython
+I have installed the IPython on the AWS EMR cluster using the script below: 
+```
+sudo yum install -y git
+git clone https://github.com/zoltanctoth/bigdata-training.git /home/hadoop/training
 
-1. Answer this question using Jupyter (iPython) Notebook on your virtual machine:
+sudo pip install s3cmd==1.6.1 ipython[notebook]==4.1.0 py4j==0.9.2
 
- What are the different amounts that were payed by users from the Netherlands (country code NL)? The input file is at `file:///home/bigdata/training/datasets/registration.log`. Show the results on the screen. Download the notebook (File -> Download as) in *HTML* fromat and upload it into your bucket with the name `spark-notebook.html`. 
- 
- *Hint: If you have an RDD (called e.g. `rdd`) and you want to get rid of the duplicate values in it, simply use the `rdd.distinct()` transformation. I cover this in the recap video.*
-
-**If you consider yourself as a technical person:**
-
-1. There is a registration/payment log with email addresses in `s3://zoltanctoth/ceu/web.log`.
-2. The results of a customer satisfaction survey are stored in `s3://zoltanctoth/ceu/satisfaction.txt`.
-3. We have a hypothesis that those users who have *gmail.com* email addresses are in general more satisfied with our services than those,
-who come with an *outlook.com* email address. Is this right? What can you see in the data? Use Spark on AWS.
-4. Show the results on the screen. Download the notebook (File -> Download as) in *HTML* fromat and upload it into your bucket with the name `spark-advanced-notebook.html`. 
- You will need a few commands here which we have not covered. [The Spark programming guide manual](http://spark.apache.org/docs/latest/programming-guide.html#working-with-key-value-pairs) will help, especially the part with *Working with key value pairs*.
-
-*Pro tip: You can avoid the key value pairs RDD part if you use dataframes and spark SQL as early as possible*
-
-
-Finishing up
-----------
-1. Please go to the AWS Management Console and make sure that
-I will be able access the files you uploaded (Select the files in the S3 browser and press *Actions* -> *Make Public*)
-2. Send me an email to *zoltanctoth@gmail.com* that you are done.
+export PYSPARK_SUBMIT_ARGS="--master yarn"
+export PYSPARK_DRIVER_PYTHON_OPTS='notebook --port=8889 --no-browser --ip='*''
+export IPYTHON=1
+pyspark
+```
+### Solution
+```
+satisfaction = sc.textFile('s3://ceu2016kocsiso/satisfaction.txt')
+emailscore = satisfaction.map(lambda x: x.split(" "))
+domainscore = emailscore.map(lambda x: [x[0][x[0].index('@') + 1 : x[0].rindex('.')], int(x[1])])
+df = domainscore.toDF(['domain','score'])
+df.registerTempTable("scores")
+result = sqlContext.sql("SELECT domain, AVG(score) AS score FROM scores GROUP BY domain ORDER BY score DESC")
+result.show()
+```
+### Result
+```
++-------+-----------------+
+| domain|            score|
++-------+-----------------+
+|  gmail|81.14285714285714|
+|  lycos|             80.5|
+|  inbox|75.71428571428571|
+|hotmail|74.28571428571429|
+|    gmx|             74.0|
+|outlook|73.85714285714286|
+|    aol|             73.6|
+|   mail|             69.7|
+|  yahoo|             69.5|
++-------+-----------------+
+```
