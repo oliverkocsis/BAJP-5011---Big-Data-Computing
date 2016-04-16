@@ -189,7 +189,19 @@ export PYSPARK_DRIVER_PYTHON_OPTS='notebook --port=8889 --no-browser --ip='*''
 export IPYTHON=1
 pyspark
 ```
-### Solution
+### Amounts
+```
+signup = sc.textFile('s3://ceu2016kocsiso/signup.log')
+payments = signup.map(lambda x: x.split(' ')).filter(lambda x: x[2] == 'payment' and x[4] == 'NL')
+amounts = payments.map(lambda x: x[5])
+amounts.distinct().collect()
+```
+
+```
+[u'59', u'99']
+```
+
+### Satisfaction
 ```
 satisfaction = sc.textFile('s3://ceu2016kocsiso/satisfaction.txt')
 emailscore = satisfaction.map(lambda x: x.split(" "))
@@ -199,7 +211,7 @@ df.registerTempTable("scores")
 result = sqlContext.sql("SELECT domain, AVG(score) AS score FROM scores GROUP BY domain ORDER BY score DESC")
 result.show()
 ```
-### Result
+
 ```
 +-------+-----------------+
 | domain|            score|
