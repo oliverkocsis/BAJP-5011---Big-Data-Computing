@@ -127,6 +127,62 @@ upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
  409 of 409   100% in    0s     4.58 kB/s  done
 ```
 
+### Satisfaction
+#### web.log
+```
+[hadoop@ip-172-31-4-179 ~]$ head web.log
+2015-08-12 07:37:43 registration organic dorothy@gmail.com 188.121.177.181
+2015-08-12 07:37:43 payment dorothy@gmail.com US 99
+2015-08-12 15:15:26 registration organic laura@hotmail.com 191.90.144.105
+2015-08-12 22:53:09 registration organic barbara@hotmail.com 208.229.189.57
+2015-08-13 06:30:52 registration organic gary@mail.com 230.45.226.70
+2015-08-13 06:30:52 payment gary@mail.com IN 99
+2015-08-13 14:08:35 registration organic michelle@lycos.com 125.164.174.190
+2015-08-13 14:08:35 payment michelle@lycos.com IN 99
+2015-08-13 21:46:18 registration organic carol@hotmail.com 28.187.253.57
+2015-08-14 05:24:01 registration sem eric@aol.com 136.178.219.192
+```
+#### satisfaction.txt 
+```
+[hadoop@ip-172-31-4-179 ~]$ head satisfaction.txt 
+barbara@hotmail.com 81
+michelle@lycos.com 91
+laura@aol.com 87
+charles@gmail.com 72
+ronald@gmail.com 78
+sarah@inbox.com 65
+karen@outlook.com 86
+patricia@outlook.com 80
+donna@hotmail.com 88
+thomas@yahoo.com 57
+```
+#### Analysis
+The average satisfcation can be calcuated using only `satisfaction.txt` file. The `web.log` is not required: 
+1. The space seperated file is loaded into Pig (lazy evaluation)
+2. The domain name is selected from the email address as a substring using the indexes of the `@` character and the last `.` character
+3. The result is grouped by domain 
+4. The mean score is calculated by domain
+5. The result list is dumped to the screen and stored to a file order by the mean score in descending order
+```
+grunt> satisfaction = LOAD 's3://ceu2016kocsiso/satisfaction.txt' USING PigStorage(' ') AS (email:chararray, score:int);
+grunt> domains = FOREACH satisfaction GENERATE SUBSTRING(email,INDEXOF(email,'@') + 1,LAST_INDEX_OF(email, '.')) as domain, score;
+grunt> groups = GROUP domains BY domain;
+grunt> mean = FOREACH groups GENERATE group as domain, AVG(domains.score) as mean;
+grunt> mean = ORDER mean BY mean DESC;
+grunt> dump mean;
+(gmail,81.14285714285714)
+(lycos,80.5)
+(inbox,75.71428571428571)
+(hotmail,74.28571428571429)
+(gmx,74.0)
+(outlook,73.85714285714286)
+(aol,73.6)
+(mail,69.7)
+(yahoo,69.5)
+grunt> STORE mean INTO 'happier.txt' USING PigStorage(',');
+```
+
+#### Upload
 
 **If you consider yourself as a technical person:**
 
