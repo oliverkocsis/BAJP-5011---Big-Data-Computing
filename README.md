@@ -99,14 +99,12 @@ grunt> DUMP amount;
 grunt> STORE amount INTO 'amounts.txt' USING PigStorage(',');
 grunt> quit
 ```
-#### Upload result
+#### Upload
 ```
 [hadoop@ip-172-31-5-23 ~]$ hadoop fs -ls
 Found 1 items
 drwxr-xr-x   - hadoop hadoop          0 2016-04-14 20:35 amounts.txt
 [hadoop@ip-172-31-5-23 ~]$ hadoop fs -get amounts.txt amounts.txt
-[hadoop@ip-172-31-5-23 ~]$ s3cmd put amounts.txt/ s3://ceu2016kocsiso/amounts.txt
-amounts.txt/  part-r-00000  _SUCCESS      
 [hadoop@ip-172-31-5-23 ~]$ s3cmd put amounts.txt/part-r-00000 s3://ceu2016kocsiso/amounts.txt
 upload: 'amounts.txt/part-r-00000' -> 's3://ceu2016kocsiso/amounts.txt'  [1 of 1]
  6 of 6   100% in    0s    12.86 B/s  done
@@ -114,17 +112,6 @@ upload: 'amounts.txt/part-r-00000' -> 's3://ceu2016kocsiso/amounts.txt'  [1 of 1
  6 of 6   100% in    0s   296.31 B/s  done
 upload: 'amounts.txt/part-r-00000' -> 's3://ceu2016kocsiso/amounts.txt'  [1 of 1]
  6 of 6   100% in    0s    77.59 B/s  done
-```
-#### Commands
-```
-[hadoop@ip-172-31-5-23 ~]$ nano amounts.pig
-[hadoop@ip-172-31-5-23 ~]$ s3cmd put amounts.pig s3://ceu2016kocsiso/amounts.pig
-upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
- 409 of 409   100% in    0s   837.04 B/s  done
-upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
- 409 of 409   100% in    0s    20.75 kB/s  done
-upload: 'amounts.pig' -> 's3://ceu2016kocsiso/amounts.pig'  [1 of 1]
- 409 of 409   100% in    0s     4.58 kB/s  done
 ```
 
 ### Satisfaction
@@ -158,11 +145,13 @@ thomas@yahoo.com 57
 ```
 #### Analysis
 The average satisfcation can be calcuated using only `satisfaction.txt` file. The `web.log` is not required: 
+
 1. The space seperated file is loaded into Pig (lazy evaluation)
 2. The domain name is selected from the email address as a substring using the indexes of the `@` character and the last `.` character
 3. The result is grouped by domain 
 4. The mean score is calculated by domain
 5. The result list is dumped to the screen and stored to a file order by the mean score in descending order
+
 ```
 grunt> satisfaction = LOAD 's3://ceu2016kocsiso/satisfaction.txt' USING PigStorage(' ') AS (email:chararray, score:int);
 grunt> domains = FOREACH satisfaction GENERATE SUBSTRING(email,INDEXOF(email,'@') + 1,LAST_INDEX_OF(email, '.')) as domain, score;
@@ -182,20 +171,9 @@ grunt> dump mean;
 grunt> STORE mean INTO 'happier.txt' USING PigStorage(',');
 ```
 
-#### Upload
+Based on the result the mean satisfaction of Gmail users over 81% but it is below 74% for Outlook users. It could be for several reasons, i.e. the Gmail users are used to flat user interfaces, they could be also more tech friendly. The real reason might be revelaed via A/B testing. 
 
-**If you consider yourself as a technical person:**
-
-1. There is a registration/payment log with email addresses in `s3://zoltanctoth/ceu/web.log`.
-2. The results of a customer satisfaction survey are stored in `s3://zoltanctoth/ceu/satisfaction.txt`.
-3. We have a hypothesis that those users who have *gmail.com* email addresses are in general more satisfied with our services than those,
-who come with an *outlook.com* email address. Is this right? What can you see in the data?
-4. Upload the two solutions into your bucket with the name: `happier.pig` and `nl.pig`.
-5. Upload your analysis (what you think and why) in text format into your bucket with the name `emailanalysis.txt`.
-
- You will need a few commands here which we have not covered. [The Pig Latin Reference manual](http://pig.apache.org/docs/r0.14.0/basic.html) is a great piece of documentation. Also, you can find [very similar pig scripts](https://github.com/zoltanctoth/bigdata-training/tree/master/pig/solutions) on my github.
-
-Spark
+## Spark
 ---
 **If you consider yourself as a non-technical person:**
 
