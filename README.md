@@ -1,4 +1,6 @@
 # BAJP-5011---Big-Data-Computing
+> Olivér Kocsis
+
 ## AWS/S3/Unix
 ### Bucket: ceu2016kocsiso
 
